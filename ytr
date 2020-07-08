@@ -2,20 +2,32 @@
 
 import click
 
-from settings import YATR_KEY
+from settings import YATR_KEY, AIRTABLE_KEY
 from ytr_client import YtrClient
+from store import Store
+
 
 client = YtrClient(YATR_KEY)
+store = Store(AIRTABLE_KEY)
+
 
 @click.command()
-@click.argument('text')
-@click.option('--lang', '-l', default="en-ru", help="Example: en-ru")
-def main(text, lang):
-	ts = client.translate(text, lang)
-	if len(ts) > 0:
-		print(f"{text} - {ts[0]}")
-	else:
-		print("No translation available")
+@click.argument('text', required=False)
+@click.option('--lang', '-l', default="en-ru", help="e.g. en-ru")
+@click.option('--history', '-h', is_flag=True, help="shows history")
+def main(text, lang, history):
+	if text and len(text) > 0:
+		ts = client.translate(text, lang)
+		if len(ts) > 0:
+			store.create(text, ts[0])
+			print(f"{text} - {ts[0]}")
+		else:
+			print("No translation available")
+
+	if history:
+		for item in store.list()["records"]:
+			print(f"{item['fields']['text']} - {item['fields']['translation']}")
+
 
 
 if __name__ == "__main__":
