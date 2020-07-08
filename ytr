@@ -9,8 +9,9 @@ client = YtrClient(YATR_KEY)
 
 @click.command()
 @click.argument('text')
-def main(text):
-	ts = client.translate(text)
+@click.option('--lang', '-l', default="en-ru", help="Example: en-ru")
+def main(text, lang):
+	ts = client.translate(text, lang)
 	if len(ts) > 0:
 		print(f"{text} - {ts[0]}")
 	else:
